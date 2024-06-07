@@ -127,7 +127,7 @@ final class FilesystemDriver implements AuditDriver
 
     private function openFile(string $filepath): mixed
     {
-        $stream = fopen($filepath, 'a+');
+        $stream = \fopen($filepath, 'a+');
 
         if ($this->acuireLock($stream, 10) === false) {
             throw new \RuntimeException("Could not acquire lock within 10 seconds");
