@@ -49,7 +49,7 @@ class FilesystemDriverTest extends TestCase
         @rmdir(storage_path(sprintf('app/%s', self::FS_DIR)));
     }
 
-    public function testAuditSingle(): void
+    public function testAuditSingleUnbuffered(): void
     {
         $auditable = new Article();
 
@@ -73,10 +73,38 @@ class FilesystemDriverTest extends TestCase
         $this->assertCount(3, $contents);
     }
 
+    public function testAuditSingleBuffered(): void
+    {
+        $auditable = new Article();
+
+        $driver = app(FilesystemDriver::class);
+        $driver->bufferStart();
+
+        $driver->audit($auditable);
+
+        $auditFile = storage_path(sprintf('app/%s/audit.csv', self::FS_DIR));
+
+        $this->assertFalse(file_exists($auditFile));
+
+        for ($i = 0; $i < 255; ++$i) {
+            $driver->audit($auditable);
+            $this->assertFalse(file_exists($auditFile));
+        }
+
+        $this->assertFalse(file_exists($auditFile));
+
+        $driver->bufferFlush();
+
+        $this->assertFileExists($auditFile);
+        $contents = file($auditFile);
+
+        $this->assertCount(257, $contents);
+    }
+
     /**
      * @environment-setup useDailyRotation
      */
-    public function testAuditDaily(): void
+    public function testAuditDailyUnbuffered(): void
     {
         $auditable = new Article();
 
@@ -103,7 +131,7 @@ class FilesystemDriverTest extends TestCase
     /**
      * @environment-setup useHourlyRotation
      */
-    public function testAuditHourly(): void
+    public function testAuditHourlyUnbuffered(): void
     {
         $auditable = new Article();
 

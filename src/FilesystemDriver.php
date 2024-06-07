@@ -14,13 +14,17 @@ use OwenIt\Auditing\Contracts\AuditDriver;
 
 final class FilesystemDriver implements AuditDriver
 {
-    protected FilesystemAdapter $disk;
+    private FilesystemAdapter $disk;
 
-    protected string $dir;
+    private string $dir;
 
-    protected string $filename;
+    private string $filename;
 
-    protected Rotation $rotation;
+    private Rotation $rotation;
+
+    private bool $buffering = false;
+    private \SplFixedArray $buffer;
+    private int $bufferLen = 0;
 
     public function __construct()
     {
@@ -34,13 +38,23 @@ final class FilesystemDriver implements AuditDriver
             throw new \InvalidArgumentException(sprintf("Unsupported rotation value '%s'", $rotationValue));
         }
         $this->rotation = $rotation;
+
+        $this->buffer = new \SplFixedArray(128);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function audit(Auditable $model): ?Audit
+    public function bufferStart(): void
     {
+        $this->buffering = true;
+    }
+
+    public function bufferFlush(): void
+    {
+        if (0 === $this->bufferLen) {
+            $this->buffering = false;
+            $this->bufferLen = 0;
+            return;
+        }
+
         if (strlen($this->dir) > 0 && $this->disk->directoryMissing($this->dir)) {
             $this->disk->makeDirectory($this->dir);
         }
@@ -52,15 +66,43 @@ final class FilesystemDriver implements AuditDriver
         $header = $reader->first();
 
         $writer = Writer::createFromStream($stream);
-        $auditArray = $this->prepareAuditValues($this->getAuditFromModel($model));
 
         if (count($header) === 0) {
-            $writer->insertOne($this->headerRow($auditArray));
+            $writer->setFlushThreshold($this->bufferLen + 1);
+            $writer->insertOne($this->headerRow($this->buffer[0]));
+        } else {
+            $writer->setFlushThreshold($this->bufferLen);
         }
 
-        $writer->insertOne($auditArray);
+        for ($i = 0; $i < $this->bufferLen; ++$i) {
+            $writer->insertOne($this->buffer[$i]);
+        }
 
         $this->closeFile($stream);
+
+        $this->buffering = false;
+        $this->bufferLen = 0;
+    }
+
+    private function bufferPush(array $row): void
+    {
+        if ($this->bufferLen >= $this->buffer->getSize() - 1) {
+            $this->buffer->setSize($this->buffer->getSize() * 2);
+        }
+
+        $this->buffer[$this->bufferLen++] = $row;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function audit(Auditable $model): ?Audit
+    {
+        $this->bufferPush($this->prepareAuditValues($this->getAuditFromModel($model)));
+
+        if (false === $this->buffering) {
+            $this->bufferFlush();
+        }
 
         $implementation = Config::get('audit.implementation', \OwenIt\Auditing\Models\Audit::class);
 
