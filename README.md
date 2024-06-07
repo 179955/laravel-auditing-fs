@@ -1,27 +1,27 @@
-This driver provides the functionality to save your model audit records as lines in CSV files. It is seamlessly integrated 
-with Laravel Storage System, enabling you to use any of the registered disks specified in your application as storage 
-destinations for the audit files. 
+This driver provides the functionality to save your model audit records as lines in CSV files. It is seamlessly integrated
+with Laravel Storage System, enabling you to use any of the registered disks specified in your application as storage
+destinations for the audit files.
 
-Additionally, the driver offers flexibility in how the audit files are generated, allowing you to choose between creating 
-a single comprehensive file or generating files for each hour of operation. Moreover, the driver can potentially improve 
+Additionally, the driver offers flexibility in how the audit files are generated, allowing you to choose between creating
+a single comprehensive file or generating files for each hour of operation. Moreover, the driver can potentially improve
 performance by buffering the log records and flushing them on shutdown.
 
 ### Installation
 
-To utilize this driver, you need to have `owen-it/laravel-auditing: ^13.0` installed. Once this requirement is met, you 
+To utilize this driver, you need to have `owen-it/laravel-auditing: ^13.0` installed. Once this requirement is met, you
 can proceed to install the driver as follows:
 
 ```
-composer require 179955/laravel-auditing-fs
+composer require OneSeven9955/laravel-auditing-fs
 ```
 
 ### Setup
 
-If you wish to modify the default behavior of the driver, you must include the following configuration entries in 
+If you wish to modify the default behavior of the driver, you must include the following configuration entries in
 `config/audit.php`. The drivers key in the configuration file should be structured as follows:
 
-```
-    ...
+```php
+    // ...
     'drivers' => [
         'database' => [
             'table'      => 'audits',
@@ -34,13 +34,48 @@ If you wish to modify the default behavior of the driver, you must include the f
             'rotation'  => 'single',    // One of 'single', 'daily', or 'hourly'
         ],
     ],
-    ...
+    // ...
 ```
 
 ### Usage
 
 You can integrate the driver into any Auditable model by following the code snippet below:
 
+```php
+<?php
+namespace App\Models;
+
+use OneSeven9955\Auditing\Drivers\FilesystemDriver;
+use Illuminate\Database\Eloquent\Model;
+use OwenIt\Auditing\Contracts\Auditable;
+
+class Article extends Model implements Auditable
+{
+    use \OwenIt\Auditing\Auditable;
+
+    /**
+     * Filesystem Audit Driver.
+     *
+     * @var \OneSeven9955\Auditing\Drivers\FilesystemDriver
+     */
+    protected $auditDriver = FilesystemDriver::class;
+
+    // ...
+}
 ```
-TODO: add the code snippet
+
+To optimize the process of writing audit records, consider buffering the records and writing
+them in bulk rather than individually. This approach helps reduce I/O operations, such as
+acquiring exclusive file locks and opening files repeatedly.
+
+You can implement this optimization by following these steps:
+
+```php
+use OneSeven9955\Auditing\Drivers\FilesystemDriver;
+
+app(FilesystemDriver::class)->bufferStart();
+    // ...
+    // PERFORM MODEL CHANGES
+    // ...
+app(FilesystemDriver::class)->bufferFlush(); // flush all audit records into a file at once
 ```
