@@ -27,7 +27,7 @@ If you wish to modify the default behavior of the driver, you must include the f
             'table'      => 'audits',
             'connection' => null,
         ],
-        'fs' => [
+        'filesystem' => [
             'disk'      => 'local',     // The registered name of any filesystem disk in the application
             'dir'       => 'audit',     // The directory on the disk where the audit csv files will be saved
             'filename'  => 'audit.csv', // The filename of the audit file
