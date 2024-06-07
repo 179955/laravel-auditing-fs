@@ -4,7 +4,7 @@ destinations for the audit files.
 
 Additionally, the driver offers flexibility in how the audit files are generated, allowing you to choose between creating
 a single comprehensive file or generating files for each hour of operation. Moreover, the driver can potentially improve
-performance by buffering the log records and flushing them on shutdown.
+performance by buffering the log records and then flushing them once you have completed making model changes.
 
 ### Installation
 
