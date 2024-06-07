@@ -1,0 +1,45 @@
+{
+    "name": "oneseven9955/laravel-auditing-filesystem",
+    "description": "This filesystem driver, designed for the owen-it/laravel-auditing package, facilitates storing audits in CSV files across all Laravel disks that are registered.",
+    "keywords": [
+        "audit",
+        "auditing",
+        "changes",
+		"driver",
+		"disk",
+        "eloquent",
+        "history",
+        "log",
+        "logging",
+        "observer",
+		"owen-it",
+        "laravel",
+        "record",
+        "revision",
+        "tracking",
+        "filesystem",
+        "csv",
+		"storage"
+    ],
+    "type": "package",
+    "license": "MIT",
+    "require": {
+        "php": "^8.1",
+        "owen-it/laravel-auditing": "^13.0",
+        "league/csv": "^9.0",
+        "league/flysystem": "^3.8.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "OneSeven9955\\Auditing\\Drivers\\": "src/"
+        }
+    },
+    "autoload-dev": {
+      "psr-4": {
+        "OneSeven9955\\Auditing\\Drivers\\Tests\\": "tests/"
+      }
+	},
+    "require-dev": {
+        "orchestra/testbench": "^8.23"
+    }
+}
