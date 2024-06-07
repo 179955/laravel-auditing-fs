@@ -5,21 +5,21 @@
         "audit",
         "auditing",
         "changes",
-		"driver",
-		"disk",
+        "driver",
+        "disk",
         "eloquent",
         "history",
         "log",
         "logging",
         "observer",
-		"owen-it",
+        "owen-it",
         "laravel",
         "record",
         "revision",
         "tracking",
         "filesystem",
         "csv",
-		"storage"
+        "storage"
     ],
     "type": "package",
     "license": "MIT",
@@ -35,10 +35,10 @@
         }
     },
     "autoload-dev": {
-      "psr-4": {
-        "OneSeven9955\\Auditing\\Drivers\\Tests\\": "tests/"
-      }
-	},
+        "psr-4": {
+            "OneSeven9955\\Auditing\\Drivers\\Tests\\": "tests/"
+        }
+    },
     "require-dev": {
         "orchestra/testbench": "^8.23"
     }
